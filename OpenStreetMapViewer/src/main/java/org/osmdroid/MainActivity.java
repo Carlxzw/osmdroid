@@ -58,10 +58,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         list.add("Settings");
         list.add("Bug Drivers");
         list.add("Diagnostics");
-        list.add("View the Intro again");
-        list.add("Licenses");
         list.add("Cache Analyzer");
-        list.add("Custion TileSystem");
+        list.add("Orgin TileSystem");
+        list.add("Custom TileSystem");
         ListView lv = findViewById(R.id.activitylist);
         ArrayAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, list);
 
@@ -103,27 +102,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 this.startActivity(new Intent(this, DiagnosticsActivity.class));
                 break;
             case 9:
-            {
-                //skip this nonsense
-                SharedPreferences.Editor edit = PreferenceManager.getDefaultSharedPreferences(this).edit();
-                edit.remove("osmdroid_first_ran");
-                edit.commit();
 
-                Intent intent = new Intent(this, IntroActivity.class);
-                startActivity(intent);
-                finish();
-                break;
-            }
-            case 10:{
-                Intent i = new Intent(this,LicenseActivity.class);
-                startActivity(i);
-                break;
-            }
-            case 11:
                 Intent starter = new Intent(this,CacheAnalyzerActivity.class);
                 startActivity(starter );
+
                 break;
-            case 12:
+
+            case 10:
+                startActivity(new Intent(this,MainActivity3.class));
+                break;
+            case 11:
                 startActivity(new Intent(this,MainActivity2.class));
                 break;
         }

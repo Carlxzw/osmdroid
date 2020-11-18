@@ -1,8 +1,6 @@
 package org.osmdroid;
 
 import android.Manifest;
-import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -12,9 +10,9 @@ import android.graphics.drawable.BitmapDrawable;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -31,34 +29,24 @@ import org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.util.MapTileIndex;
-import org.osmdroid.util.TileSystemWGS84;
 import org.osmdroid.util.Transform;
 import org.osmdroid.views.MapView;
-import org.osmdroid.views.Projection;
-import org.osmdroid.views.ProjectionWGS84;
-import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.MapEventsOverlay;
-import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.PolyOverlayWithIW;
 import org.osmdroid.views.overlay.Polygon;
 import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.views.overlay.gridlines.LatLonGridlineOverlay2;
 import org.osmdroid.views.overlay.mylocation.DirectedLocationOverlay;
-import org.osmdroid.views.overlay.simplefastpoint.SimpleFastPointOverlay;
-import org.osmdroid.views.overlay.simplefastpoint.SimpleFastPointOverlayOptions;
-import org.osmdroid.views.overlay.simplefastpoint.SimplePointTheme;
 import org.osmdroid.wms.WMSTileSource;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class MainActivity2 extends AppCompatActivity implements LocationListener, MapEventsReceiver {
+public class MainActivity3 extends AppCompatActivity implements LocationListener, MapEventsReceiver {
     private boolean hasFix = false;
     private DirectedLocationOverlay overlay;
     MapView mMapView;
@@ -91,20 +79,17 @@ public class MainActivity2 extends AppCompatActivity implements LocationListener
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
-
         mMapView = findViewById(R.id.mapview);
-        MapView.setTileSystem(new TileSystemWGS84());
         mMapView.setDrawingCacheEnabled(true);
         mMapView.setMultiTouchControls(true);// 触控手势放大缩小
         mMapView.setMaxZoomLevel(20.0);
         mMapView.setMinZoomLevel(1.0);
-//        this.mMapView.setHorizontalMapRepetitionEnabled(false);
-//        this.mMapView.setVerticalMapRepetitionEnabled(false);
-
+        this.mMapView.setHorizontalMapRepetitionEnabled(false);
+        this.mMapView.setVerticalMapRepetitionEnabled(false);
         polyline = new Polyline(mMapView);
         LatLonGridlineOverlay2 grids = new LatLonGridlineOverlay2();
         mMapView.getOverlayManager().add(grids);
-        OnlineTileSourceBase TDTSource = new OnlineTileSourceBase("Tian Di Tu Wmts", 1, 21, 256, "",
+        OnlineTileSourceBase TDTWSource = new OnlineTileSourceBase("Tian Di Tu Wmts", 1, 21, 256, "",
                 new String[]{"http://t0.tianditu.gov.cn/img_w/wmts"}) {
             @Override
             public String getTileURLString(long pMapTileIndex) {
@@ -118,7 +103,7 @@ public class MainActivity2 extends AppCompatActivity implements LocationListener
                 return url;
             }
         };
-        OnlineTileSourceBase TDTWSource = new OnlineTileSourceBase("Tian Di Tu Wmts", 1, 18, 256, "",
+        OnlineTileSourceBase TDTCSource = new OnlineTileSourceBase("Tian Di Tu Wmts", 1, 18, 256, "",
                 new String[]{"http://t0.tianditu.gov.cn/img_c/wmts"}) {
             @Override
             public String getTileURLString(long pMapTileIndex) {
@@ -164,7 +149,7 @@ public class MainActivity2 extends AppCompatActivity implements LocationListener
             mMapView.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE);
         }
 
-        mMapView.setTileSource(WMTSSource);
+        mMapView.setTileSource(TDTWSource);
 
 
         overlay = new DirectedLocationOverlay(this);
@@ -259,7 +244,7 @@ public class MainActivity2 extends AppCompatActivity implements LocationListener
         ret = registeredExtensions.toArray(ret);
         properties.extensions = ret;
 
-        FilePickerDialog dialog = new FilePickerDialog(MainActivity2.this, properties);
+        FilePickerDialog dialog = new FilePickerDialog(MainActivity3.this, properties);
         dialog.setTitle("Select a File");
         dialog.setDialogSelectionListener(new DialogSelectionListener() {
             @Override
@@ -267,7 +252,6 @@ public class MainActivity2 extends AppCompatActivity implements LocationListener
                 //files is the array of the paths of files selected by the Application User.
                 try {
                     List<Overlay>  folder = ShapeConverter.convert(mMapView, new File(files[0]));
-                    Polygon polygon = new Polygon();
                     for (final Overlay item : folder) {
                         if (item instanceof PolyOverlayWithIW) {
                             final PolyOverlayWithIW poly = (PolyOverlayWithIW)item;
@@ -279,30 +263,13 @@ public class MainActivity2 extends AppCompatActivity implements LocationListener
                             paint.setStrokeCap(Paint.Cap.ROUND);
                             paint.setStrokeWidth(5);
                             paint.setColor(Color.RED);
-                            final Paint paint2 = polygon.getOutlinePaint();
-                            polygon.setDowngradePixelSizes(3000, 20);
-                            polygon.setDowngradeDisplay(true);
-                            paint2.setStyle(Paint.Style.STROKE);
-                            paint2.setStrokeJoin(Paint.Join.ROUND);
-                            paint2.setStrokeCap(Paint.Cap.ROUND);
-                            paint2.setStrokeWidth(10);
-                            paint2.setColor(Color.BLACK);
-
-                            for (GeoPoint actualPoint : poly.getActualPoints()) {
-//                                Marker marker = new Marker(mMapView);
-//                                marker.setPosition(actualPoint);
-//                                marker.setAnchor(Marker.ANCHOR_BOTTOM,Marker.ANCHOR_BOTTOM);
-//                                mMapView.getOverlayManager().add(marker);
-                                polygon.addPoint(actualPoint);
-                            }
-                            mMapView.getOverlayManager().add(polygon);
                         }
                     }
                     mMapView.getOverlayManager().addAll(folder);
-                    mMapView.getController().animateTo(polygon.getActualPoints().get(0),18.0,null);
+                    mMapView.getController().animateTo(folder.get(0).getBounds().getCenterWithDateLine(),18.0,null);
                     mMapView.invalidate();
                 } catch (Exception e) {
-                    Toast.makeText(MainActivity2.this, "Error importing file: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity3.this, "Error importing file: " + e.getMessage(), Toast.LENGTH_LONG).show();
                     Log.e("xzw", "error importing file from " + files[0], e);
                 }
 
@@ -312,7 +279,6 @@ public class MainActivity2 extends AppCompatActivity implements LocationListener
         dialog.show();
 
     }
-
 
 
 }

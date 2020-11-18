@@ -16,6 +16,16 @@ public interface GeoConstants {
 	int EQUATORCIRCUMFENCE = (int) (2 * Math.PI * RADIUS_EARTH_METERS);
 
 	/**
+	 * Projected coordinate systems
+	 * 投影方式
+	 * 等矩矩形
+	 * 伪墨卡托
+	 */
+	enum ProjectionType{
+		PLATTE_CARRE,WEB_MERCATOR
+	}
+
+	/**
 	 * @since 6.1.1
 	 */
 	enum UnitOfMeasure {

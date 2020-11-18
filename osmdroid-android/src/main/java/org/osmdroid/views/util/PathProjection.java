@@ -39,7 +39,7 @@ public class PathProjection {
 		boolean first = true;
 		for (final GeoPoint gp : in) {
 			final Point underGeopointTileCoords = new Point();
-			final double mapSize = TileSystem.MapSize(projection.getZoomLevel());
+			final double mapSize = TileSystem.MapSizeX(projection.getZoomLevel());
 			final PointL mercator = tileSystem.getMercatorFromGeo(
 					gp.getLatitude(), gp.getLongitude(), mapSize,
 					null, true);
