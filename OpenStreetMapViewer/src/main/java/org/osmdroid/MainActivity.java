@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         list.add("View the Intro again");
         list.add("Licenses");
         list.add("Cache Analyzer");
-
+        list.add("Custion TileSystem");
         ListView lv = findViewById(R.id.activitylist);
         ArrayAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, list);
 
@@ -122,6 +122,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             case 11:
                 Intent starter = new Intent(this,CacheAnalyzerActivity.class);
                 startActivity(starter );
+                break;
+            case 12:
+                startActivity(new Intent(this,MainActivity2.class));
                 break;
         }
     }

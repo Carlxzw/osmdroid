@@ -2,6 +2,8 @@ package org.osmdroid.util;
 
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.util.Log;
+
 import org.osmdroid.util.constants.GeoConstants;
 
 /**
@@ -582,8 +584,11 @@ abstract public class TileSystem {
 	 */
 	public GeoPoint getGeoFromMercator(final long pMercatorX, final long pMercatorY, final double pMapSize, final GeoPoint pReuse, boolean horizontalWrapEnabled, boolean verticalWrapEnabled) {
 		final GeoPoint out = pReuse == null ? new GeoPoint(0., 0.) : pReuse;
-		out.setLatitude(getLatitudeFromY01(getXY01FromMercator(pMercatorY, pMapSize, verticalWrapEnabled), verticalWrapEnabled));
-		out.setLongitude(getLongitudeFromX01(getXY01FromMercator(pMercatorX, pMapSize, horizontalWrapEnabled), horizontalWrapEnabled));
+		out.setLatitude(getLatitudeFromY01(getXY01FromMercator(pMercatorY, pMapSize / 2, verticalWrapEnabled), verticalWrapEnabled));
+//				out.setLatitude(getLatitudeFromY01(getXY01FromMercator(pMercatorY, pMapSize, verticalWrapEnabled), verticalWrapEnabled));
+
+		out.setLongitude(getLongitudeFromX01(getXY01FromMercator(pMercatorX, pMapSize , horizontalWrapEnabled), horizontalWrapEnabled));
+//		Log.d("xzw", "getGeoFromMercator: "+out.getLatitude()+":"+out.getLongitude());
 		return out;
 	}
 
@@ -619,6 +624,7 @@ abstract public class TileSystem {
 	}
 
 	/**
+	 * 从墨卡托像素坐标获取瓦片所在行列号，向下取整
 	 * @since 6.0.0
 	 */
 	public static int getTileFromMercator(final long pMercator, final double pTileSize) {
@@ -626,7 +632,11 @@ abstract public class TileSystem {
 	}
 
 	/**
-	 * @since 6.0.0
+	 *
+	 * @param pMercatorRect
+	 * @param pTileSize 瓦片的尺寸大小
+	 * @param pReuse
+	 * @return
 	 */
 	public static Rect getTileFromMercator(final RectL pMercatorRect, final double pTileSize, final Rect pReuse) {
 		final Rect out = (pReuse == null ? new Rect() : pReuse);

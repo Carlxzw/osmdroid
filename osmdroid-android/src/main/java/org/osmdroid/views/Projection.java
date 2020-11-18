@@ -14,6 +14,7 @@ import org.osmdroid.util.RectL;
 import org.osmdroid.util.TileSystem;
 
 import android.graphics.Canvas;
+import android.util.Log;
 
 /**
  * A Projection serves to translate between the coordinate system of x/y on-screen pixel coordinates
@@ -38,35 +39,35 @@ public class Projection implements IProjection {
 	 * smaller map / smaller zoom
 	 */
 	public static final double mProjectedMapSize = 1L << 60;
-	private long mOffsetX;
-	private long mOffsetY;
-	private long mScrollX;
-	private long mScrollY;
+	protected long mOffsetX;
+	protected long mOffsetY;
+	protected long mScrollX;
+	protected long mScrollY;
 
-	private final Matrix mRotateAndScaleMatrix = new Matrix();
-	private final Matrix mUnrotateAndScaleMatrix = new Matrix();
-	private final float[] mRotateScalePoints = new float[2];
+	protected final Matrix mRotateAndScaleMatrix = new Matrix();
+	protected final Matrix mUnrotateAndScaleMatrix = new Matrix();
+	protected final float[] mRotateScalePoints = new float[2];
 
-	private final BoundingBox mBoundingBoxProjection = new BoundingBox();
-	private final double mZoomLevelProjection;
-	private final Rect mScreenRectProjection = new Rect();
-	private final Rect mIntrinsicScreenRectProjection;
+	protected final BoundingBox mBoundingBoxProjection = new BoundingBox();
+	protected final double mZoomLevelProjection;
+	protected final Rect mScreenRectProjection = new Rect();
+	protected final Rect mIntrinsicScreenRectProjection;
 
-	private boolean horizontalWrapEnabled;
-	private boolean verticalWrapEnabled;
+	protected boolean horizontalWrapEnabled;
+	protected boolean verticalWrapEnabled;
 
-	private final double mMercatorMapSize;
-	private final double mTileSize;
-	private final float mOrientation;
-	private final GeoPoint mCurrentCenter = new GeoPoint(0., 0);
+	protected final double mMercatorMapSizeX,mMercatorMapSizeY;
+	protected final double mTileSize;
+	protected final float mOrientation;
+	protected final GeoPoint mCurrentCenter = new GeoPoint(0., 0);
 
-	private final TileSystem mTileSystem;
+	protected final TileSystem mTileSystem;
 
 	/**
 	 * @since 6.1.1
 	 */
-	private final int mMapCenterOffsetX;
-	private final int mMapCenterOffsetY;
+	protected final int mMapCenterOffsetX;
+	protected final int mMapCenterOffsetY;
 
 	Projection(MapView mapView) {
 		this(
@@ -97,14 +98,15 @@ public class Projection implements IProjection {
 		horizontalWrapEnabled = pHorizontalWrapEnabled;
 		verticalWrapEnabled = pVerticalWrapEnabled;
 		mTileSystem = pTileSystem;
-		mMercatorMapSize = TileSystem.MapSize(mZoomLevelProjection);
+		mMercatorMapSizeX = TileSystem.MapSize(mZoomLevelProjection);
+		mMercatorMapSizeY = (TileSystem.MapSize(mZoomLevelProjection))/2;
 		mTileSize = TileSystem.getTileSize(mZoomLevelProjection);
 		mIntrinsicScreenRectProjection = pScreenRect;
 		final GeoPoint center = pCenter != null ? pCenter : new GeoPoint(0., 0);
 		mScrollX = pScrollX;
 		mScrollY = pScrollY;
-		mOffsetX = getScreenCenterX() - mScrollX - mTileSystem.getMercatorXFromLongitude(center.getLongitude(), mMercatorMapSize, this.horizontalWrapEnabled);
-		mOffsetY = getScreenCenterY() - mScrollY - mTileSystem.getMercatorYFromLatitude(center.getLatitude(), mMercatorMapSize, this.verticalWrapEnabled);
+		mOffsetX = getScreenCenterX() - mScrollX - mTileSystem.getMercatorXFromLongitude(center.getLongitude(), mMercatorMapSizeX, this.horizontalWrapEnabled);
+		mOffsetY = getScreenCenterY() - mScrollY - mTileSystem.getMercatorYFromLatitude(center.getLatitude(), mMercatorMapSizeY, this.verticalWrapEnabled);
 		mOrientation = pOrientation;
 		mRotateAndScaleMatrix.preRotate(mOrientation, getScreenCenterX(), getScreenCenterY());
 		mRotateAndScaleMatrix.invert(mUnrotateAndScaleMatrix);
@@ -195,8 +197,8 @@ public class Projection implements IProjection {
 		//reverting https://github.com/osmdroid/osmdroid/issues/459
 		//due to relapse of https://github.com/osmdroid/osmdroid/issues/507
 		//reverted functionality is now on the method fromPixelsRotationSensitive
-		return mTileSystem.getGeoFromMercator(getCleanMercator(getMercatorXFromPixel(pPixelX), horizontalWrapEnabled),
-				getCleanMercator(getMercatorYFromPixel(pPixelY), verticalWrapEnabled), mMercatorMapSize, pReuse,
+		return mTileSystem.getGeoFromMercator(getCleanMercatorX(getMercatorXFromPixel(pPixelX), horizontalWrapEnabled),
+				getCleanMercatorY(getMercatorYFromPixel(pPixelY), verticalWrapEnabled), mMercatorMapSizeX, pReuse,
 				horizontalWrapEnabled || forceWrap, verticalWrapEnabled || forceWrap);
 	}
 
@@ -217,7 +219,7 @@ public class Projection implements IProjection {
 	 * TODO refactor
 	 */
 	public long getLongPixelXFromLongitude(final double pLongitude, boolean forceWrap) {
-		return getLongPixelXFromMercator(mTileSystem.getMercatorXFromLongitude(pLongitude, mMercatorMapSize, horizontalWrapEnabled || forceWrap), horizontalWrapEnabled);
+		return getLongPixelXFromMercator(mTileSystem.getMercatorXFromLongitude(pLongitude, mMercatorMapSizeX, horizontalWrapEnabled || forceWrap), horizontalWrapEnabled);
 	}
 
 	/**
@@ -225,7 +227,7 @@ public class Projection implements IProjection {
 	 * TODO refactor
 	 */
 	public long getLongPixelXFromLongitude(final double pLongitude) {
-		return getLongPixelXFromMercator(mTileSystem.getMercatorXFromLongitude(pLongitude, mMercatorMapSize, false), false);
+		return getLongPixelXFromMercator(mTileSystem.getMercatorXFromLongitude(pLongitude, mMercatorMapSizeX, false), false);
 	}
 
 	/**
@@ -233,7 +235,7 @@ public class Projection implements IProjection {
 	 * TODO refactor
 	 */
 	public long getLongPixelYFromLatitude(final double pLatitude, boolean forceWrap) {
-		return getLongPixelYFromMercator(mTileSystem.getMercatorYFromLatitude(pLatitude, mMercatorMapSize, verticalWrapEnabled || forceWrap), verticalWrapEnabled);
+		return getLongPixelYFromMercator(mTileSystem.getMercatorYFromLatitude(pLatitude , mMercatorMapSizeY, verticalWrapEnabled || forceWrap), verticalWrapEnabled);
 	}
 
 	/**
@@ -241,7 +243,7 @@ public class Projection implements IProjection {
 	 * TODO refactor
 	 */
 	public long getLongPixelYFromLatitude(final double pLatitude) {
-		return getLongPixelYFromMercator(mTileSystem.getMercatorYFromLatitude(pLatitude, mMercatorMapSize, false), false);
+		return getLongPixelYFromMercator(mTileSystem.getMercatorYFromLatitude(pLatitude, mMercatorMapSizeY, false), false);
 	}
 
 	/**
@@ -327,8 +329,8 @@ public class Projection implements IProjection {
 
 	public PointL toMercatorPixels(final int pPixelX, final int pPixelY, final PointL reuse) {
 		final PointL out = reuse != null ? reuse : new PointL();
-		out.x = getCleanMercator(getMercatorXFromPixel(pPixelX), horizontalWrapEnabled);
-		out.y = getCleanMercator(getMercatorYFromPixel(pPixelY), verticalWrapEnabled);
+		out.x = getCleanMercatorX(getMercatorXFromPixel(pPixelX), horizontalWrapEnabled);
+		out.y = getCleanMercatorY(getMercatorYFromPixel(pPixelY), verticalWrapEnabled);
 		return out;
 	}
 	@Override
@@ -445,6 +447,7 @@ public class Projection implements IProjection {
 	 * @since 6.0.0
 	 */
 	public double getProjectedPowerDifference() {
+		Log.d("xzw", "getProjectedPowerDifference: "+mProjectedMapSize / getWorldMapSize());
 		return mProjectedMapSize / getWorldMapSize();
 	}
 
@@ -518,26 +521,38 @@ public class Projection implements IProjection {
      * @since 6.0.0
      */
     private long getLongPixelXFromMercator(final long pMercatorX, final boolean pCloser) {
-        return getLongPixelFromMercator(pMercatorX, pCloser, mOffsetX, mIntrinsicScreenRectProjection.left, mIntrinsicScreenRectProjection.right);
+        return getLongPixelXFromMercator(pMercatorX, pCloser, mOffsetX, mIntrinsicScreenRectProjection.left, mIntrinsicScreenRectProjection.right);
     }
 
     /**
      * @since 6.0.0
      */
     private long getLongPixelYFromMercator(final long pMercatorY, final boolean pCloser) {
-        return getLongPixelFromMercator(pMercatorY, pCloser, mOffsetY, mIntrinsicScreenRectProjection.top, mIntrinsicScreenRectProjection.bottom);
+        return getLongPixelYFromMercator(pMercatorY, pCloser, mOffsetY, mIntrinsicScreenRectProjection.top, mIntrinsicScreenRectProjection.bottom);
     }
 
 	/**
      * @since 6.0.0
      */
-    private long getLongPixelFromMercator(final long pMercator, final boolean pCloser, final long pOffset, final int pScreenLimitFirst, final int pScreenLimitLast) {
+    private long getLongPixelXFromMercator(final long pMercator, final boolean pCloser, final long pOffset, final int pScreenLimitFirst, final int pScreenLimitLast) {
         long result = pMercator + pOffset;
         if (pCloser) {
-            result = getCloserPixel(result, pScreenLimitFirst, pScreenLimitLast, mMercatorMapSize);
+            result = getCloserPixel(result, pScreenLimitFirst, pScreenLimitLast, mMercatorMapSizeX);
         }
         return result;
     }
+
+	/**
+	 * @since 6.0.0
+	 */
+	private long getLongPixelYFromMercator(final long pMercator, final boolean pCloser, final long pOffset, final int pScreenLimitFirst, final int pScreenLimitLast) {
+		long result = pMercator + pOffset;
+		if (pCloser) {
+			result = getCloserPixel(result, pScreenLimitFirst, pScreenLimitLast, mMercatorMapSizeY);
+		}
+		return result;
+	}
+
 
 	/**
 	 * @since 6.0.0
@@ -625,8 +640,12 @@ public class Projection implements IProjection {
 	/**
 	 * @since 6.0.0
 	 */
-	public long getCleanMercator(final long pMercator, final boolean wrapEnabled) {
-		return mTileSystem.getCleanMercator(pMercator, mMercatorMapSize, wrapEnabled);
+	public long getCleanMercatorX(final long pMercator, final boolean wrapEnabled) {
+		return mTileSystem.getCleanMercator(pMercator, mMercatorMapSizeX, wrapEnabled);
+	}
+
+	public long getCleanMercatorY(final long pMercator, final boolean wrapEnabled) {
+		return mTileSystem.getCleanMercator(pMercator, mMercatorMapSizeY, wrapEnabled);
 	}
 
 	/**
@@ -757,11 +776,11 @@ public class Projection implements IProjection {
 			min = getLongPixelYFromLatitude(pNorthOrWest);
 			max = getLongPixelYFromLatitude(pSouthOrEast);
 			deltaX = 0;
-			deltaY = getScrollableOffset(min, max, mMercatorMapSize, mIntrinsicScreenRectProjection.height(), pExtraSize);
+			deltaY = getScrollableOffset(min, max, mMercatorMapSizeY, mIntrinsicScreenRectProjection.height(), pExtraSize);
 		} else {
 			min = getLongPixelXFromLongitude(pNorthOrWest);
 			max = getLongPixelXFromLongitude(pSouthOrEast);
-			deltaX = getScrollableOffset(min, max, mMercatorMapSize, mIntrinsicScreenRectProjection.width(), pExtraSize);
+			deltaX = getScrollableOffset(min, max, mMercatorMapSizeX, mIntrinsicScreenRectProjection.width(), pExtraSize);
 			deltaY = 0;
 		}
 		adjustOffsets(deltaX, deltaY);
@@ -867,6 +886,6 @@ public class Projection implements IProjection {
 	 * @since 6.2.0
 	 */
 	public double getWorldMapSize() {
-		return mMercatorMapSize;
+		return mMercatorMapSizeX;
 	}
 }

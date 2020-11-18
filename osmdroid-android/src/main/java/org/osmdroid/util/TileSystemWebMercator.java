@@ -5,9 +5,10 @@ package org.osmdroid.util;
  * @author Fabrice Fontaine
  */
 public class TileSystemWebMercator extends TileSystem{
-
-    public static final double MinLatitude = -85.05112877980658;
-    public static final double MaxLatitude = 85.05112877980658;
+//    private static final double MinLatitude = -85.05112877980658;
+//    private static final double MaxLatitude = 85.05112877980658;
+    public static final double MinLatitude = -90;
+    public static final double MaxLatitude = 90;
     public static final double MinLongitude = -180;
     public static final double MaxLongitude = 180;
 
@@ -18,8 +19,9 @@ public class TileSystemWebMercator extends TileSystem{
 
     @Override
     public double getY01FromLatitude(final double pLatitude) {
-        final double sinus = Math.sin(pLatitude * Math.PI / 180);
-        return 0.5 - Math.log((1 + sinus) / (1 - sinus)) / (4 * Math.PI);
+//        final double sinus = Math.sin(pLatitude * Math.PI / 180);
+//        return (0.5 - Math.log((1 + sinus) / (1 - sinus)) / (4 * Math.PI))  ;
+       return  (getMaxLatitude() - pLatitude) / (getMaxLatitude() - getMinLatitude());
     }
 
     @Override
@@ -29,7 +31,8 @@ public class TileSystemWebMercator extends TileSystem{
 
     @Override
     public double getLatitudeFromY01(final double pY01) {
-        return 90 - 360 * Math.atan(Math.exp((pY01 - 0.5) * 2 * Math.PI)) / Math.PI;
+        return getMaxLatitude() - (getMaxLatitude() - getMinLatitude()) * pY01;
+//        return 90 - (360 * Math.atan(Math.exp((pY01 - 0.5) * 2 * Math.PI)) / Math.PI);
     }
 
     @Override

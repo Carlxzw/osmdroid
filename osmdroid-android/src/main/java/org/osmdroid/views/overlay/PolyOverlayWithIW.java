@@ -28,16 +28,25 @@ import java.util.List;
  */
 public abstract class PolyOverlayWithIW extends OverlayWithIW {
 
+	//边界
 	protected LinearRing mOutline;
+	//镂空部分
 	protected List<LinearRing> mHoles = new ArrayList<>();
+	//边界样式
 	protected Paint mOutlinePaint = new Paint();
+	//填充样式
 	protected Paint mFillPaint;
+	//边界样式集合
 	private final List<PaintList> mOutlinePaintLists = new ArrayList<>();
+	//里程碑？
 	private List<MilestoneManager> mMilestoneManagers = new ArrayList<>();
+	//弹出气泡坐标
 	private GeoPoint mInfoWindowLocation;
-
+	//线段绘制
 	private LineDrawer mLineDrawer;
+	//路径
 	protected Path mPath;
+	//密度
 	protected float mDensity = 1.0f;
 
 	/**
@@ -51,9 +60,16 @@ public abstract class PolyOverlayWithIW extends OverlayWithIW {
 
     /**
      * @since 6.2.0
+	 * 最大降级像素大小
      */
 	private int mDowngradeMaximumPixelSize;
+	/**
+	 * 最大降级矩形像素大小
+	 */
     private int mDowngradeMaximumRectanglePixelSize;
+	/**
+	 * 是否降级显示。这里理解为把复杂几何图形简化为一个矩形显示
+	 */
 	private boolean mDowngradeDisplay;
 	private final Point mDowngradeTopLeft = new Point();
 	private final Point mDowngradeBottomRight = new Point();
@@ -221,9 +237,9 @@ public abstract class PolyOverlayWithIW extends OverlayWithIW {
 
 	@Override
 	public void draw(final Canvas pCanvas, final Projection pProjection) {
-		if (!isVisible(pProjection)) {
-			return;
-		}
+//		if (!isVisible(pProjection)) {
+//			return;
+//		}
 
 		if (mDowngradeMaximumPixelSize > 0) {
 			if (!isWorthDisplaying(pProjection)) {
@@ -272,7 +288,7 @@ public abstract class PolyOverlayWithIW extends OverlayWithIW {
         final double screenRadius = Math.sqrt(Distance.getSquaredDistanceToPoint(
                 0, 0,
                 screenCenterX, screenCenterY));
-
+//        return true;
         return distanceBetweenCenters <= radius + screenRadius;
 	}
 
@@ -428,9 +444,10 @@ public abstract class PolyOverlayWithIW extends OverlayWithIW {
 		final BoundingBox boundingBox = getBounds();
 		pProjection.toPixels(new GeoPoint(boundingBox.getLatNorth(), boundingBox.getLonEast()), mDowngradeTopLeft);
 		pProjection.toPixels(new GeoPoint(boundingBox.getLatSouth(), boundingBox.getLonWest()), mDowngradeBottomRight);
-		final double worldSize = pProjection.getWorldMapSize();
-		final long right = Math.round(mOutline.getCloserValue(mDowngradeTopLeft.x, mDowngradeBottomRight.x, worldSize));
-		final long bottom = Math.round(mOutline.getCloserValue(mDowngradeTopLeft.y, mDowngradeBottomRight.y, worldSize));
+		final double worldSizeX = pProjection.getWorldMapSize();
+		final double worldSizeY = pProjection.getWorldMapSize() / 2;
+		final long right = Math.round(mOutline.getCloserValue(mDowngradeTopLeft.x, mDowngradeBottomRight.x, worldSizeX));
+		final long bottom = Math.round(mOutline.getCloserValue(mDowngradeTopLeft.y, mDowngradeBottomRight.y, worldSizeY));
 		if (Math.abs(mDowngradeTopLeft.x - mDowngradeBottomRight.x) < mDowngradeMaximumPixelSize) {
 			return false;
 		}
@@ -460,11 +477,12 @@ public abstract class PolyOverlayWithIW extends OverlayWithIW {
 		final BoundingBox boundingBox = mOutline.getBoundingBox();
 		pProjection.toPixels(new GeoPoint(boundingBox.getLatNorth(), boundingBox.getLonEast()), mDowngradeTopLeft);
 		pProjection.toPixels(new GeoPoint(boundingBox.getLatSouth(), boundingBox.getLonWest()), mDowngradeBottomRight);
-		final double worldSize = pProjection.getWorldMapSize();
+		final double worldSizeX = pProjection.getWorldMapSize();
+		final double worldSizeY = pProjection.getWorldMapSize() / 2;
 		long left = mDowngradeTopLeft.x;
 		long top = mDowngradeTopLeft.y;
-		final long right = Math.round(mOutline.getCloserValue(left, mDowngradeBottomRight.x, worldSize));
-		final long bottom = Math.round(mOutline.getCloserValue(top, mDowngradeBottomRight.y, worldSize));
+		final long right = Math.round(mOutline.getCloserValue(left, mDowngradeBottomRight.x, worldSizeX));
+		final long bottom = Math.round(mOutline.getCloserValue(top, mDowngradeBottomRight.y, worldSizeY));
 		final long width;
 		if (left == right) {
 			width = 1;
