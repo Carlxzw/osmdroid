@@ -19,8 +19,10 @@ import android.view.ViewGroup;
 
 import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
+import org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
+import org.osmdroid.util.MapTileIndex;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.CopyrightOverlay;
 import org.osmdroid.views.overlay.MinimapOverlay;
@@ -109,6 +111,7 @@ public class StarterMapFragment extends Fragment {
                 return false;
             }
         });
+
         return mMapView;
     }
 
@@ -129,13 +132,11 @@ public class StarterMapFragment extends Fragment {
         mMapView.getOverlays().add(this.mLocationOverlay);
 
 
-
         //Mini map
         mMinimapOverlay = new MinimapOverlay(context, mMapView.getTileRequestCompleteHandler());
         mMinimapOverlay.setWidth(dm.widthPixels / 5);
         mMinimapOverlay.setHeight(dm.heightPixels / 5);
         mMapView.getOverlays().add(this.mMinimapOverlay);
-
 
 
         //Copyright overlay
@@ -145,11 +146,9 @@ public class StarterMapFragment extends Fragment {
         mMapView.getOverlays().add(this.mCopyrightOverlay);
 
 
-
-
         //On screen compass
         mCompassOverlay = new CompassOverlay(context, new InternalCompassOrientationProvider(context),
-            mMapView);
+                mMapView);
         mCompassOverlay.enableCompass();
         mMapView.getOverlays().add(this.mCompassOverlay);
 
@@ -159,7 +158,6 @@ public class StarterMapFragment extends Fragment {
         mScaleBarOverlay.setCentred(true);
         mScaleBarOverlay.setScaleBarOffset(dm.widthPixels / 2, 10);
         mMapView.getOverlays().add(this.mScaleBarOverlay);
-
 
 
         //support for map rotation
@@ -216,7 +214,7 @@ public class StarterMapFragment extends Fragment {
     public void onResume() {
         super.onResume();
         final String tileSourceName = mPrefs.getString(PREFS_TILE_SOURCE,
-            TileSourceFactory.DEFAULT_TILE_SOURCE.name());
+                TileSourceFactory.DEFAULT_TILE_SOURCE.name());
         try {
             final ITileSource tileSource = TileSourceFactory.getTileSource(tileSourceName);
             mMapView.setTileSource(tileSource);
@@ -224,6 +222,24 @@ public class StarterMapFragment extends Fragment {
             mMapView.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE);
         }
 
+        OnlineTileSourceBase WMTSSource = new OnlineTileSourceBase("Wmts", 1, 18, 256, "",
+                new String[]{"https://fxpc.mem.gov.cn/wmts"}) {
+
+            @Override
+            public String getTileURLString(long pMapTileIndex) {
+                int tileRow = (int) Math.floor(MapTileIndex.getY(pMapTileIndex));
+                int tileCol = MapTileIndex.getX(pMapTileIndex);
+                String url = getBaseUrl() + "?SERVICE=WMTS" + "&REQUEST=GetTile" + "&VERSION=1.0.0" +
+                        "&LAYER=img" + "&STYLE=default" + "&TILEMATRIXSET=c" + "&FORMAT=tiles" +
+                        "&TILEMATRIX=" + (MapTileIndex.getZoom(pMapTileIndex)) +
+                        "&TILEROW=" + tileRow +
+                        "&TILECOL=" + tileCol +
+                        "&tk=4989e906aa138e5bb1b49a3eb83a6128";
+//                Log.d("xzw", "getTileURLString:" + url);
+                return url;
+            }
+        };
+        mMapView.setTileSource(WMTSSource);
         mMapView.onResume();
     }
 
@@ -234,7 +250,7 @@ public class StarterMapFragment extends Fragment {
 
         // Put "About" menu item last
         menu.add(0, MENU_ABOUT, Menu.CATEGORY_SECONDARY, org.osmdroid.R.string.about).setIcon(
-            android.R.drawable.ic_menu_info_details);
+                android.R.drawable.ic_menu_info_details);
 
         super.onCreateOptionsMenu(menu, inflater);
     }
@@ -254,14 +270,14 @@ public class StarterMapFragment extends Fragment {
         switch (item.getItemId()) {
             case MENU_ABOUT:
                 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
-                    .setTitle(org.osmdroid.R.string.app_name).setMessage(org.osmdroid.R.string.about_message)
-                    .setIcon(org.osmdroid.R.drawable.icon)
-                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) {
-                                //
-                            }
-                        }
-                    );
+                        .setTitle(org.osmdroid.R.string.app_name).setMessage(org.osmdroid.R.string.about_message)
+                        .setIcon(org.osmdroid.R.drawable.icon)
+                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int whichButton) {
+                                        //
+                                    }
+                                }
+                        );
                 builder.create().show();
                 return true;
         }

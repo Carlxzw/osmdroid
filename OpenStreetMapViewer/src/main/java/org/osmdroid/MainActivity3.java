@@ -32,6 +32,7 @@ import org.osmdroid.util.MapTileIndex;
 import org.osmdroid.util.Transform;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.MapEventsOverlay;
+import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.PolyOverlayWithIW;
 import org.osmdroid.views.overlay.Polygon;
@@ -73,6 +74,12 @@ public class MainActivity3 extends AppCompatActivity implements LocationListener
             lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
         } catch (Exception ex) {
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mMapView.onDetach();
     }
 
     @Override
@@ -187,15 +194,11 @@ public class MainActivity3 extends AppCompatActivity implements LocationListener
         }
         hasFix = true;
 
-        if (!mMapView.getOverlays().contains(polyline)){
+        if (!mMapView.getOverlays().contains(polyline)) {
             overlay.setBearing(location.getBearing());
             overlay.setAccuracy((int) location.getAccuracy());
             GeoPoint point = Transform.transformOffsetCoor(location.getLatitude(), location.getLongitude());
             overlay.setLocation(point);
-            polyline.addPoint(point);
-            polyline.addPoint(new GeoPoint(point.getLatitude()+1,point.getLongitude()));
-            polyline.getPaint().setStrokeWidth(20);
-            mMapView.getOverlays().add(polyline);
             mMapView.invalidate();
         }
 
@@ -251,22 +254,27 @@ public class MainActivity3 extends AppCompatActivity implements LocationListener
             public void onSelectedFilePaths(String[] files) {
                 //files is the array of the paths of files selected by the Application User.
                 try {
-                    List<Overlay>  folder = ShapeConverter.convert(mMapView, new File(files[0]));
+                    List<Overlay> folder = ShapeConverter.convert(mMapView, new File(files[0]));
                     for (final Overlay item : folder) {
                         if (item instanceof PolyOverlayWithIW) {
-                            final PolyOverlayWithIW poly = (PolyOverlayWithIW)item;
-                            poly.setDowngradePixelSizes(3000, 20);
-                            poly.setDowngradeDisplay(true);
+                            final PolyOverlayWithIW poly = (PolyOverlayWithIW) item;
+//                            poly.setDowngradePixelSizes(3000, 20);
+//                            poly.setDowngradeDisplay(true);
                             final Paint paint = poly.getOutlinePaint();
                             paint.setStyle(Paint.Style.STROKE);
                             paint.setStrokeJoin(Paint.Join.ROUND);
                             paint.setStrokeCap(Paint.Cap.ROUND);
                             paint.setStrokeWidth(5);
                             paint.setColor(Color.RED);
+//                            for (GeoPoint actualPoint : poly.getActualPoints()) {
+//                                Marker marker = new Marker(mMapView);
+//                                marker.setPosition(actualPoint);
+//                                mMapView.getOverlayManager().add(marker);
+//                            }
                         }
                     }
                     mMapView.getOverlayManager().addAll(folder);
-                    mMapView.getController().animateTo(folder.get(0).getBounds().getCenterWithDateLine(),18.0,null);
+                    mMapView.getController().animateTo(folder.get(0).getBounds().getCenterWithDateLine(), 18.0, null);
                     mMapView.invalidate();
                 } catch (Exception e) {
                     Toast.makeText(MainActivity3.this, "Error importing file: " + e.getMessage(), Toast.LENGTH_LONG).show();

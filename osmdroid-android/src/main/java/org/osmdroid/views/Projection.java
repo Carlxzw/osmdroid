@@ -288,7 +288,7 @@ public class Projection implements IProjection {
      * @since 6.0.0
      */
     public PointL toProjectedPixels(final double latitude, final double longitude, final boolean pWrapEnabled, final PointL reuse) {
-        return mTileSystem.getMercatorFromGeo(latitude, longitude, mProjectedMapSize, reuse, pWrapEnabled);
+        return mTileSystem.getMercatorFromGeo(latitude, longitude, mProjectedMapSize, mProjectedMapSize, reuse, pWrapEnabled);
     }
 
     /**
@@ -442,7 +442,6 @@ public class Projection implements IProjection {
      * @since 6.0.0
      */
     public double getProjectedPowerDifference() {
-        Log.d("xzw", "getProjectedPowerDifference: " + mProjectedMapSize / getWorldMapSize());
         return mProjectedMapSize / getWorldMapSize();
     }
 

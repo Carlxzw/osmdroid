@@ -40,7 +40,7 @@ android {
             // All the usual Gradle options.
             testLogging {
                 events "passed", "skipped", "failed", "standardOut", "standardError"
-                outputs.upToDateWhen {false}
+                outputs.upToDateWhen { false }
                 showStandardStreams = true
             }
         }
@@ -70,12 +70,16 @@ dependencies {
     compile group: 'com.opencsv', name: 'opencsv', version: '4.4'
 
     //usual android stuff
-    compile "com.android.support:design:${project.property('android-support.version')}" //needed for UI menuing
-    compile "com.android.support:cardview-v7:${project.property('android-support.version')}"  //needed for samples only
-    compile "com.android.support:recyclerview-v7:${project.property('android-support.version')}" //needed for samples only
-    compile      'com.android.support:multidex:1.0.3'
+    compile "com.android.support:design:${project.property('android-support.version')}"
+    //needed for UI menuing
+    compile "com.android.support:cardview-v7:${project.property('android-support.version')}"
+    //needed for samples only
+    compile "com.android.support:recyclerview-v7:${project.property('android-support.version')}"
+    //needed for samples only
+    compile 'com.android.support:multidex:1.0.3'
 
-    compile "com.android.support:appcompat-v7:${project.property('android-support.version')}" //needed for UI menuing
+    compile "com.android.support:appcompat-v7:${project.property('android-support.version')}"
+    //needed for UI menuing
     //crash logging
     compile 'ch.acra:acra:4.7.0'
 
@@ -87,6 +91,7 @@ dependencies {
     androidTestCompile 'com.android.support.test:rules:0.4.+'
     androidTestCompile 'com.android.support:multidex:1.0.3'
     androidTestCompile "com.android.support:support-annotations:${project.property('android-support.version')}"
+    implementation 'com.google.code.gson:gson:2.8.6'
 }
 
 
@@ -94,7 +99,7 @@ dependencies {
 
 android.applicationVariants.all { variant ->
     if (variant.getBuildType().name == "debug") {
-        task "configDevice${variant.name.capitalize()}" (type: Exec){
+        task "configDevice${variant.name.capitalize()}"(type: Exec) {
             dependsOn variant.install
 
             group = 'nameofyourtaskgroup'
@@ -111,7 +116,7 @@ android.applicationVariants.all { variant ->
 
 android.applicationVariants.all { variant ->
     if (variant.getBuildType().name == "debug") {
-        task "configDevice2${variant.name.capitalize()}" (type: Exec){
+        task "configDevice2${variant.name.capitalize()}"(type: Exec) {
             dependsOn variant.install
 
             group = 'nameofyourtaskgroup'

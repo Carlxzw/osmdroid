@@ -202,12 +202,12 @@ abstract public class TileSystem {
 
     /**
      * @since 6.0.0
-     * Use {@link TileSystem#getMercatorFromGeo(double, double, double, PointL, boolean)} instead
+     * Use {@link TileSystem#getMercatorFromGeo(double, double, double, double, PointL, boolean)} instead
      */
     @Deprecated
     public PointL LatLongToPixelXYMapSize(double latitude, double longitude,
                                           final double mapSize, final PointL reuse) {
-        return getMercatorFromGeo(latitude, longitude, mapSize, reuse, true);
+        return getMercatorFromGeo(latitude, longitude, mapSize, mapSize, reuse, true);
     }
 
     /**
@@ -602,10 +602,10 @@ abstract public class TileSystem {
     /**
      * @since 6.0.0
      */
-    public PointL getMercatorFromGeo(final double pLatitude, final double pLongitude, final double pMapSize, final PointL pReuse, boolean wrapEnabled) {
+    public PointL getMercatorFromGeo(final double pLatitude, final double pLongitude, final double pMapSizeX, final double pMapSizeY, final PointL pReuse, boolean wrapEnabled) {
         final PointL out = (pReuse == null ? new PointL() : pReuse);
-        out.x = getMercatorXFromLongitude(pLongitude, pMapSize, wrapEnabled);
-        out.y = getMercatorYFromLatitude(pLatitude, pMapSize, wrapEnabled);
+        out.x = getMercatorXFromLongitude(pLongitude, pMapSizeX, wrapEnabled);
+        out.y = getMercatorYFromLatitude(pLatitude, pMapSizeY, wrapEnabled);
         return out;
     }
 
