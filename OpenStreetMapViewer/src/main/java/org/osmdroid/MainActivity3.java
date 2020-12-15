@@ -96,7 +96,7 @@ public class MainActivity3 extends AppCompatActivity implements LocationListener
         polyline = new Polyline(mMapView);
         LatLonGridlineOverlay2 grids = new LatLonGridlineOverlay2();
         mMapView.getOverlayManager().add(grids);
-        OnlineTileSourceBase TDTWSource = new OnlineTileSourceBase("Tian Di Tu Wmts", 1, 21, 256, "",
+        OnlineTileSourceBase TDTWSource = new OnlineTileSourceBase("Tian Di Tu Wmts", 1, 18, 256, "",
                 new String[]{"http://t0.tianditu.gov.cn/img_w/wmts"}) {
             @Override
             public String getTileURLString(long pMapTileIndex) {
@@ -266,11 +266,11 @@ public class MainActivity3 extends AppCompatActivity implements LocationListener
                             paint.setStrokeCap(Paint.Cap.ROUND);
                             paint.setStrokeWidth(5);
                             paint.setColor(Color.RED);
-//                            for (GeoPoint actualPoint : poly.getActualPoints()) {
-//                                Marker marker = new Marker(mMapView);
-//                                marker.setPosition(actualPoint);
-//                                mMapView.getOverlayManager().add(marker);
-//                            }
+                            for (GeoPoint actualPoint : poly.getActualPoints()) {
+                                Marker marker = new Marker(mMapView);
+                                marker.setPosition(actualPoint);
+                                mMapView.getOverlayManager().add(marker);
+                            }
                         }
                     }
                     mMapView.getOverlayManager().addAll(folder);

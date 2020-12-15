@@ -30,6 +30,7 @@ import java.util.List;
  *
  * @author Fabrice Fontaine
  * @since 6.0.0
+ *
  */
 public class LinearRing {
 
@@ -576,7 +577,8 @@ public class LinearRing {
         for (final GeoPoint currentGeo : mOriginalPoints) {
             final double latitude = currentGeo.getLatitude();
             final double longitude = currentGeo.getLongitude();
-            tileSystem.getMercatorFromGeo(latitude, longitude, projectedMapSize, projectedMapSize, current, false);
+            //xzw
+            tileSystem.getMercatorFromGeo(latitude, longitude, projectedMapSize, projectedMapSize / 2, current, false);
             if (index == 0) {
                 minX = maxX = current.x;
                 minY = maxY = current.y;
