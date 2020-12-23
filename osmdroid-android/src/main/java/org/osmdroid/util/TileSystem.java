@@ -120,6 +120,10 @@ abstract public class TileSystem {
         return (int) Math.round(MapSizeX((double) levelOfDetail));
     }
 
+    public static double MapSize(final double pZoomLevel) {
+        return getTileSize() * getFactor(pZoomLevel);
+    }
+
     /**
      * @since 6.0.0
      */
